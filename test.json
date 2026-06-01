@@ -1,0 +1,171 @@
+{
+    "cells": [
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "id": "41986eef",
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "import pandas as pd\n",
+                "import numpy as np\n",
+                "import matplotlib.pyplot as plt\n",
+                "import seaborn as sns\n",
+                "from sklearn.model_selection import train_test_split\n",
+                "from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor\n",
+                "from sklearn.metrics import classification_report, confusion_matrix\n",
+                "from sklearn.datasets import load_diabetes\n",
+                "import warnings\n",
+                "warnings.filterwarnings(\"ignore\")\n"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "id": "a6bcfc93",
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "dataset= load_diabetes()\n",
+                "dataset"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "id": "dbbd7286",
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "dataset.keys()"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "id": "8c314d6c",
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "dataset.feature_names"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "id": "b1f609d4",
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "df= pd.DataFrame(dataset.data, columns=dataset.feature_names)\n",
+                "df.head()"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "id": "1d477132",
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "y= dataset.target\n",
+                "y"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "id": "08c8b277",
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "x_train, x_test, y_train, y_test= train_test_split(df, y, test_size=0.2, random_state=42)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "id": "962486c0",
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "plt.figure(figsize=(10, 6))\n",
+                "sns.heatmap(x_train.corr(), annot=True)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "id": "e81a94b2",
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "DG= DecisionTreeRegressor()\n",
+                "DG.fit(x_train, y_train)\n",
+                "y_pred= DG.predict(x_test)\n",
+                "from sklearn.metrics import mean_squared_error, r2_score\n",
+                "print(\"Mean Squared Error:\", mean_squared_error(y_test, y_pred))\n",
+                "print(\"R2 Score:\", r2_score(y_test, y_pred))\n"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "id": "b9749562",
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "param_grid= {\n",
+                "    'criterion': ['mse', 'friedman_mse', 'mae'],\n",
+                "    'splitter': ['best', 'random'],\n",
+                "    'max_depth': [None, 1,5,10,15,25,],\n",
+                "    'min_samples_split': [2, 5, 10],\n",
+                "    'min_samples_leaf': [1, 2, 4],\n",
+                "    'max_features': [None, 'sqrt', 'log2']\n",
+                "}\n",
+                "from sklearn.model_selection import GridSearchCV\n",
+                "grid_search= GridSearchCV(estimator=DG, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2, scoring='neg_mean_squared_error')\n",
+                "grid_search.fit(x_train, y_train)\n",
+                "print(\"Best Hyperparameters:\", grid_search.best_params_)\n",
+                "best_DG= grid_search.best_estimator_\n",
+                "y_pred_best= best_DG.predict(x_test)\n",
+                "print(\"Mean Squared Error with Best Hyperparameters:\", mean_squared_error(y_test, y_pred_best))\n",
+                "print(\"R2 Score with Best Hyperparameters:\", r2_score(y_test, y_pred_best))\n"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": null,
+            "id": "029a1b8a",
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "from sklearn import tree\n",
+                "plt.figure(figsize=(20, 10))\n",
+                "tree.plot_tree(best_DG, filled=True)  \n",
+                "  \n"
+            ]
+        }
+    ],
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3"
+        },
+        "language_info": {
+            "codemirror_mode": {
+                "name": "ipython",
+                "version": 3
+            },
+            "file_extension": ".py",
+            "mimetype": "text/x-python",
+            "name": "python",
+            "nbconvert_exporter": "python",
+            "pygments_lexer": "ipython3",
+            "version": "3.13.13"
+        }
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5
+}
